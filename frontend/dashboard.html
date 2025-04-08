@@ -68,12 +68,89 @@
             color: #888;
             font-size: 14px;
         }
+
+        .transaction-list {
+            text-align: left;
+            margin: 20px 0;
+            background-color: #333;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .transaction-item {
+            margin-bottom: 10px;
+            padding: 8px;
+            border: 1px solid #555;
+            border-radius: 5px;
+        }
+
+        .transaction-item p {
+            margin: 2px 0;
+        }
+
+        .transaction-item a {
+            color: #00e676;
+            text-decoration: none;
+        }
+
+        .transaction-item a:hover {
+            text-decoration: underline;
+        }
     </style>
 
     <!-- MetaMask Connection Script -->
     <script type="module" src="./metamask.js"></script>
     <script type="module">
         import metaMaskConnector from './metamask.js';
+
+        async function fetchSepoliaTransactions(address) {
+            const apiKey = "5WJIRZI3DXRJR2RGWIQHWPQI4ZFYZQAWQF";  // Etherscan API key
+            const url = `https://api-sepolia.etherscan.io/api?module=account&action=txlist&address=${address}&startblock=0&endblock=99999999&sort=desc&apikey=${apiKey}`;
+
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.status === "1") {
+                    return data.result;
+                } else {
+                    console.error("Error fetching transactions:", data.message);
+                    return [];
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                return [];
+            }
+        }
+
+        async function displayTransactions() {
+            const address = "0x63F7a2606C8e9925046C1e5D37c978D0cd9D5266";  // Wallet address
+            const transactions = await fetchSepoliaTransactions(address);
+
+            const container = document.getElementById("transactionList");
+            container.innerHTML = "";
+
+            if (transactions.length === 0) {
+                container.innerHTML = "<p>No transactions found or an error occurred.</p>";
+                return;
+            }
+
+            transactions.slice(0, 5).forEach(tx => {
+                const txItem = document.createElement("div");
+                txItem.className = "transaction-item";
+                txItem.innerHTML = `
+                    <p>Hash: <a href="https://sepolia.etherscan.io/tx/${tx.hash}" target="_blank">${tx.hash}</a></p>
+                    <p>From: ${tx.from}</p>
+                    <p>To: ${tx.to}</p>
+                    <p>Value: ${(parseFloat(tx.value) / (10 ** 18)).toFixed(4)} ETH</p>
+                    <p>Block: ${tx.blockNumber}</p>
+                    <p>Gas Used: ${tx.gasUsed}</p>
+                    <p>Timestamp: ${new Date(tx.timeStamp * 1000).toLocaleString()}</p>
+                    <hr>
+                `;
+                container.appendChild(txItem);
+            });
+        }
 
         async function initDashboard() {
             try {
@@ -88,6 +165,7 @@
                 console.error("❌ Error during MetaMask connection:", error);
                 alert("❌ Failed to check MetaMask connection.");
             }
+            displayTransactions();
         }
 
         function logout() {
@@ -100,7 +178,6 @@
             window.location.href = "donate.html";
         }
 
-        // Initialize the dashboard on page load
         window.onload = initDashboard;
         window.logout = logout;
         window.redirectToDonate = redirectToDonate;
@@ -117,6 +194,11 @@
         <a href="fund.html" class="link">💰 Fund Campaign</a>
         <button class="donate-btn" onclick="redirectToDonate();">💰 Donate</button>
         <button onclick="logout()" class="logout-btn">🚪 Logout</button>
+    </div>
+
+    <div class="card">
+        <h3>Recent Transactions</h3>
+        <div id="transactionList" class="transaction-list">Loading...</div>
     </div>
 
     <footer>
