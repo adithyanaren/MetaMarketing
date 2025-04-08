@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="./style.css">
+    <title>Campaigns - MetaMarketing</title>
+    <!-- Web3.js library -->
+    <script src="https://cdn.jsdelivr.net/gh/ethereum/web3.js/dist/web3.min.js"></script>
+    <!-- MetaMask Connection Script -->
+    <script type="module" src="./metamask.js"></script>
+    <script type="module">
+        import metaMaskConnector from './metamask.js';
+
+        const factoryAddress = "0xc587b076e7388b175622a8c41e5727e3882ea60f";
+
+        const factoryABI = [
+            {
+                "inputs": [
+                    { "internalType": "bytes32", "name": "_name", "type": "bytes32" },
+                    { "internalType": "bytes32", "name": "_type", "type": "bytes32" }
+                ],
+                "name": "createCampaign",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "getAllCampaigns",
+                "outputs": [
+                    {
+                        "components": [
+                            { "internalType": "address", "name": "campaignAddress", "type": "address" },
+                            { "internalType": "bytes32", "name": "name", "type": "bytes32" },
+                            { "internalType": "bytes32", "name": "campaignType", "type": "bytes32" },
+                            { "internalType": "address", "name": "owner", "type": "address" }
+                        ],
+                        "internalType": "struct CampaignFactory.CampaignData[]",
+                        "type": "tuple[]"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            }
+        ];
+
+        async function initCampaigns() {
+            const account = await metaMaskConnector.checkConnection();
+            if (!account) {
+                alert("Please connect MetaMask.");
+                window.location.href = "login.html";
+                return;
+            }
+            document.getElementById("accountAddress").textContent = `Connected: ${account}`;
+            clearCampaignList();
+        }
+
+        function clearCampaignList() {
+            const campaignList = document.getElementById("campaignList");
+            campaignList.innerHTML = "<li>No campaigns loaded. Please search.</li>";
+        }
+
+        async function createCampaign() {
+            const name = document.getElementById("campaignName").value;
+            const campaignType = document.getElementById("campaignType").value;
+
+            if (!name || !campaignType) {
+                alert("Please enter both name and type.");
+                return;
+            }
+
+            try {
+                const web3 = new Web3(window.ethereum);
+                const account = await metaMaskConnector.getAccount();
+                const factory = new web3.eth.Contract(factoryABI, factoryAddress);
+
+                const nameBytes32 = web3.utils.asciiToHex(name);
+                const typeBytes32 = web3.utils.asciiToHex(campaignType);
+
+                await factory.methods.createCampaign(nameBytes32, typeBytes32).send({
+                    from: account,
+                    gas: 3000000
+                });
+
+                alert("Campaign created successfully!");
+                searchCampaigns();
+            } catch (error) {
+                console.error("Error creating campaign:", error);
+                alert("Failed to create campaign.");
+            }
+        }
+
+        async function searchCampaigns() {
+            const searchTerm = document.getElementById("searchBar").value.toLowerCase().trim();
+            const filterType = document.getElementById("filterType").value.toLowerCase();
+
+            try {
+                const web3 = new Web3(window.ethereum);
+                const factory = new web3.eth.Contract(factoryABI, factoryAddress);
+                const campaigns = await factory.methods.getAllCampaigns().call();
+                const campaignList = document.getElementById("campaignList");
+                campaignList.innerHTML = "";
+
+                const filteredCampaigns = campaigns.filter((campaign) => {
+                    const name = web3.utils.hexToUtf8(campaign.name).toLowerCase().trim();
+                    const type = web3.utils.hexToUtf8(campaign.campaignType).toLowerCase().trim();
+                    const address = web3.utils.toChecksumAddress(campaign.campaignAddress).toLowerCase();
+
+                    return (
+                        (name.includes(searchTerm) || address.includes(searchTerm)) &&
+                        (filterType === "all types" || type === filterType)
+                    );
+                });
+
+                if (filteredCampaigns.length === 0) {
+                    campaignList.innerHTML = "<li>No matching campaigns found.</li>";
+                    return;
+                }
+
+                filteredCampaigns.forEach((campaign) => {
+                    const name = web3.utils.hexToUtf8(campaign.name);
+                    const type = web3.utils.hexToUtf8(campaign.campaignType);
+                    const address = web3.utils.toChecksumAddress(campaign.campaignAddress);
+
+                    const listItem = document.createElement("li");
+                    listItem.innerHTML = `
+                        <div class="campaign-item">
+                            <span>${name} (${type}) at ${address}</span>
+                            <button class="fund-btn" onclick="redirectToFund('${address}')">Fund Campaign</button>
+                        </div>
+                    `;
+                    campaignList.appendChild(listItem);
+                });
+            } catch (error) {
+                console.error("Error loading campaigns:", error);
+                document.getElementById("campaignList").innerHTML = "Error loading campaigns.";
+            }
+        }
+
+        function redirectToFund(address) {
+            window.location.href = `fund.html?address=${address}`;
+        }
+
+        window.createCampaign = createCampaign;
+        window.searchCampaigns = searchCampaigns;
+        window.redirectToFund = redirectToFund;
+        window.onload = initCampaigns;
+    </script>
+    <style>
+        body {
+            background-color: #121212;
+            color: #e0e0e0;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            margin: 0;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #ffffff;
+            background-color: #1e88e5;
+            padding: 20px;
+            font-size: 24px;
+            border-radius: 8px;
+        }
+
+        .card {
+            background-color: #1f1f1f;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 10px auto;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+        }
+
+        .input-field, .fund-btn, select {
+            margin: 8px;
+            padding: 12px;
+            border-radius: 5px;
+            border: none;
+            background-color: #333;
+            color: #e0e0e0;
+            width: 90%;
+            font-size: 16px;
+        }
+
+        .fund-btn {
+            background-color: #007bff;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .fund-btn:hover {
+            background-color: #0056b3;
+        }
+
+        .campaign-item {
+            margin: 8px 0;
+            padding: 12px;
+            background-color: #2c2c2c;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h2>Campaigns - MetaMarketing</h2>
+        <p id="accountAddress">Loading...</p>
+    </div>
+
+    <div class="card">
+        <input class="input-field" type="text" id="campaignName" placeholder="Enter campaign name">
+        <input class="input-field" type="text" id="campaignType" placeholder="Enter campaign type">
+        <button class="fund-btn" onclick="createCampaign()">Create Campaign</button>
+
+        <input class="input-field" type="text" id="searchBar" placeholder="Search by name or address">
+        <select id="filterType" class="input-field">
+            <option>All Types</option>
+            <option>Email</option>
+            <option>SMS</option>
+            <option>Social Media</option>
+        </select>
+        <button class="fund-btn" onclick="searchCampaigns()">Search</button>
+
+        <ul id="campaignList"></ul>
+    </div>
+</body>
+</html>

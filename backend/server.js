@@ -2,11 +2,21 @@ const express = require("express");
 const { ethers } = require("ethers");
 const dotenv = require("dotenv");
 const cors = require("cors");
+const path = require("path");
 
 dotenv.config();
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+// Serve static files from the frontend directory
+const frontendPath = path.join(__dirname, "../frontend");
+app.use(express.static(frontendPath));
+
+// Default route - Redirect to login page
+app.get("/", (req, res) => {
+    res.sendFile(path.join(frontendPath, "login.html"));
+});
 
 // Load environment variables
 const provider = new ethers.providers.JsonRpcProvider(process.env.SEPOLIA_RPC_URL);
@@ -21,11 +31,7 @@ const factoryAbi = [
 // Initialize Factory Contract
 const campaignFactory = new ethers.Contract(factoryAddress, factoryAbi, provider);
 
-app.get("/", (req, res) => {
-    res.send("✅ MetaMarketing Backend is Running!");
-});
-
-// 🔹 Fetch All Campaigns
+// Fetch All Campaigns
 app.get("/my-campaigns", async (req, res) => {
     try {
         console.log("📡 Fetching all campaigns from blockchain...");
@@ -50,16 +56,16 @@ app.get("/my-campaigns", async (req, res) => {
     }
 });
 
-// 🔹 Prevent direct campaign creation (handled via frontend & MetaMask)
+// Prevent direct campaign creation (handled via frontend & MetaMask)
 app.post("/create-campaign", async (req, res) => {
     res.status(403).json({ error: "Campaign creation must be done via MetaMask frontend!" });
 });
 
-// 🔹 Prevent direct payments (handled via frontend & MetaMask)
+// Prevent direct payments (handled via frontend & MetaMask)
 app.post("/pay-campaign", async (req, res) => {
     res.status(403).json({ error: "Payments must be made via MetaMask frontend!" });
 });
 
 // Start server
 const PORT = 5000;
-app.listen(PORT, () => console.log(`🚀 Backend running on port ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Backend running on http://localhost:${PORT}`));

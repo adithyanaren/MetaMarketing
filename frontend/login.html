@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="./style.css">
+    <meta charset="UTF-8">
+    <title>Login - MetaMarketing</title>
+    <!-- MetaMask Connection Script -->
+    <script type="module" src="./metamask.js"></script>
+    <script type="module">
+        import metaMaskConnector from './metamask.js';
+
+        async function handleLogin() {
+            try {
+                const account = await metaMaskConnector.connect();
+                if (account) {
+                    alert("✅ MetaMask connected successfully!");
+                    window.location.href = "dashboard.html";
+                } else {
+                    alert("❌ MetaMask connection failed.");
+                }
+            } catch (error) {
+                console.error("❌ Error during login:", error);
+                alert("❌ Failed to connect MetaMask.");
+            }
+        }
+
+        // Attach the handleLogin function to the global window object
+        window.handleLogin = handleLogin;
+    </script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #e0e0e0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .login-card {
+            background-color: #1f1f1f;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            width: 300px;
+        }
+
+        h2 {
+            color: #1e88e5;
+            margin-bottom: 15px;
+        }
+
+        p {
+            margin-bottom: 20px;
+            color: #999;
+        }
+
+        button {
+            padding: 12px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        footer {
+            position: absolute;
+            bottom: 20px;
+            text-align: center;
+            color: #888;
+            width: 100%;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <h2>Login to MetaMarketing</h2>
+        <p>Connect your MetaMask wallet to continue.</p>
+        <button onclick="handleLogin()">Connect MetaMask</button>
+    </div>
+
+    <footer>
+        MetaMarketing - Decentralized Marketing Hub
+    </footer>
+</body>
+</html>

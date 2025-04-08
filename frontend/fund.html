@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="./style.css">
+    <title>Fund Campaign - MetaMarketing</title>
+    <!-- Web3.js library -->
+    <script src="https://cdn.jsdelivr.net/gh/ethereum/web3.js/dist/web3.min.js"></script>
+    <!-- MetaMask Connection Script -->
+    <script type="module" src="./metamask.js"></script>
+    <script type="module">
+        import metaMaskConnector from './metamask.js';
+
+        async function initFundPage() {
+            const account = await metaMaskConnector.checkConnection();
+            if (!account) {
+                alert("Please connect MetaMask.");
+                window.location.href = "login.html";
+                return;
+            }
+            document.getElementById("accountAddress").textContent = `Connected: ${account}`;
+
+            // Get the campaign address from URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            const address = urlParams.get("address");
+            if (address) {
+                document.getElementById("campaignAddress").value = address;
+            }
+        }
+
+        async function fundCampaign(amount) {
+    const address = document.getElementById("campaignAddress").value;
+
+    if (!address) {
+        alert("❌ Please enter the campaign address.");
+        return;
+    }
+
+    try {
+        const web3 = new Web3(window.ethereum);
+        const account = await metaMaskConnector.getAccount();
+
+        if (!web3.utils.isAddress(address)) {
+            alert("❌ Invalid campaign address.");
+            return;
+        }
+
+        const campaignAbi = [
+            {
+                "inputs": [],
+                "name": "markAsPaid",
+                "outputs": [],
+                "stateMutability": "payable",
+                "type": "function"
+            }
+        ];
+
+        const campaignContract = new web3.eth.Contract(campaignAbi, address);
+
+        // Convert the amount to Wei properly
+        const valueInWei = web3.utils.toWei(String(amount), "ether");
+
+        await campaignContract.methods.markAsPaid().send({
+            from: account,
+            value: valueInWei,
+            gas: 100000
+        })
+        .on('transactionHash', (hash) => {
+            alert("✅ Transaction sent. Awaiting confirmation...");
+            console.log("✅ Transaction sent: ", hash);
+        })
+        .on('receipt', (receipt) => {
+            alert("✅ Payment successful!");
+            console.log("✅ Transaction confirmed: ", receipt);
+            document.getElementById("paymentStatus").textContent = "✅ Payment successful!";
+            document.getElementById("campaignDetails").textContent = `Campaign Address: ${address}`;
+        })
+        .on('error', (error) => {
+            console.error("❌ Error during transaction: ", error);
+            alert("❌ Failed to fund campaign. Transaction reverted.");
+        });
+
+    } catch (error) {
+        console.error("❌ Error funding campaign:", error);
+        alert("❌ Failed to fund campaign. Transaction reverted.");
+    }
+}
+
+
+        function redirectToDashboard() {
+            window.location.href = "dashboard.html";
+        }
+
+        function logout() {
+            metaMaskConnector.disconnect();
+            alert("Logged out successfully!");
+            window.location.href = "login.html";
+        }
+
+        window.fundCampaignNormal = () => fundCampaign("0.01");
+        window.fundCampaignPremium = () => fundCampaign("0.01");
+        window.redirectToDashboard = redirectToDashboard;
+        window.logout = logout;
+        window.onload = initFundPage;
+    </script>
+    <style>
+        body {
+            background-color: #121212;
+            color: #e0e0e0;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header {
+            background-color: #1e88e5;
+            color: white;
+            padding: 20px;
+            font-size: 24px;
+        }
+
+        .card {
+            background-color: #1f1f1f;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px auto;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+        }
+
+        input[type="text"] {
+            width: 80%;
+            padding: 10px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 5px;
+            background-color: #333;
+            color: #e0e0e0;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .fund-btn {
+            background-color: #00e676;
+        }
+
+        .premium-btn {
+            background-color: #ffc107;
+        }
+
+        .dashboard-btn {
+            background-color: #007bff;
+        }
+
+        .logout-btn {
+            background-color: #dc3545;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .result-box {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #2c2c2c;
+            border-radius: 8px;
+        }
+
+        footer {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #1e1e1e;
+            color: #888;
+            font-size: 14px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h2>Fund Campaign - MetaMarketing</h2>
+    </div>
+
+    <div class="card">
+        <p id="accountAddress">Loading...</p>
+        <label for="campaignAddress">Campaign Address:</label>
+        <input type="text" id="campaignAddress" placeholder="0x...">
+        
+        <button class="btn fund-btn" onclick="fundCampaignNormal()"> Subscribe (0.01 ETH)</button>
+        <button class="btn premium-btn" onclick="fundCampaignPremium()">Premium (0.05 ETH)</button>
+        <button class="btn dashboard-btn" onclick="redirectToDashboard()">Back to Dashboard</button>
+        <button class="btn logout-btn" onclick="logout();">Logout</button>
+
+        <div class="result-box">
+            <p id="paymentStatus">Awaiting payment...</p>
+            <p id="campaignDetails"></p>
+        </div>
+    </div>
+
+    <footer>
+        MetaMarketing - Decentralized Marketing Hub
+    </footer>
+</body>
+</html>
