@@ -1,37 +1,55 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="stylesheet" href="./style.css">
+    <link rel="stylesheet" href="/style.css">
     <meta charset="UTF-8">
     <title>Dashboard - MetaMarketing</title>
     <style>
         body {
-            background-color: #121212;
+            background: #121212;
             color: #e0e0e0;
             font-family: 'Arial', sans-serif;
             margin: 0;
             padding: 0;
+            overflow-x: hidden;
         }
 
         .dashboard-header {
-            background-color: #1e88e5;
+            background: linear-gradient(45deg, #FF00FF, #00FFFF);
             color: white;
-            padding: 20px;
+            padding: 40px;
             text-align: center;
             margin: 0;
-            font-size: 24px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            font-size: 32px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.8), 0 0 30px rgba(255, 255, 255, 0.8);
+            animation: glow 1.5s infinite alternate;
+        }
+
+        @keyframes glow {
+            0% {
+                text-shadow: 0 0 15px rgba(255, 255, 255, 0.8), 0 0 30px rgba(255, 255, 255, 0.8);
+            }
+            100% {
+                text-shadow: 0 0 25px rgba(255, 255, 255, 0.8), 0 0 45px rgba(255, 255, 255, 0.8);
+            }
         }
 
         .card {
-            background-color: #1f1f1f;
+            background-color: #222222;
             color: #e0e0e0;
             margin: 20px auto;
             padding: 30px;
             border-radius: 12px;
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 6px 18px rgba(0, 255, 255, 0.5);
             max-width: 600px;
             text-align: center;
+            transition: all 0.4s ease;
+        }
+
+        .card:hover {
+            transform: scale(1.05) rotate(2deg);
+            box-shadow: 0 10px 30px rgba(0, 255, 255, 0.5);
         }
 
         .link, .logout-btn, .donate-btn {
@@ -39,31 +57,57 @@
             background-color: #282828;
             color: #00e676;
             text-decoration: none;
-            padding: 12px 20px;
+            padding: 15px 25px;
             margin: 10px;
             border-radius: 8px;
-            transition: 0.3s;
+            font-size: 18px;
+            font-weight: bold;
+            text-transform: uppercase;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
         }
 
         .link:hover, .logout-btn:hover, .donate-btn:hover {
             background-color: #333;
             color: #fff;
+            transform: translateY(-5px);
+            box-shadow: 0 0 25px rgba(255, 255, 255, 0.5);
+        }
+
+        .link:before, .logout-btn:before, .donate-btn:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, #FF00FF, #00FFFF);
+            transform: scaleX(0);
+            transform-origin: top right;
+            transition: transform 0.5s ease;
+        }
+
+        .link:hover:before, .logout-btn:hover:before, .donate-btn:hover:before {
+            transform: scaleX(1);
+            transform-origin: top left;
         }
 
         .logout-btn {
-            background-color: #d32f2f;
+            background-color: #FF5733;
             color: #fff;
         }
 
         .donate-btn {
-            background-color: #ffc107;
+            background-color: #FFCC00;
             color: white;
         }
 
         footer {
             text-align: center;
             margin-top: 20px;
-            padding: 10px;
+            padding: 20px;
             background-color: #1e1e1e;
             color: #888;
             font-size: 14px;
@@ -73,19 +117,30 @@
             text-align: left;
             margin: 20px 0;
             background-color: #333;
-            padding: 10px;
-            border-radius: 8px;
+            padding: 15px;
+            border-radius: 10px;
+            max-height: 450px;
+            overflow-y: auto;
+            box-shadow: 0 4px 12px rgba(0, 255, 255, 0.4);
         }
 
         .transaction-item {
-            margin-bottom: 10px;
-            padding: 8px;
+            margin-bottom: 12px;
+            padding: 12px;
             border: 1px solid #555;
-            border-radius: 5px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            background-color: #222;
+        }
+
+        .transaction-item:hover {
+            background-color: #444;
+            transform: scale(1.02);
         }
 
         .transaction-item p {
             margin: 2px 0;
+            font-size: 14px;
         }
 
         .transaction-item a {
@@ -98,19 +153,19 @@
         }
     </style>
 
-    <!-- MetaMask Connection Script -->
-    <script type="module" src="./metamask.js"></script>
-    <script type="module">
-        import metaMaskConnector from './metamask.js';
+    <!-- ✅ FIXED: MetaMask as regular script (no module) -->
+    <script src="/metamask.js"></script>
+    <script>
+        const metaMaskConnector = window.metaMaskConnector;
 
         async function fetchSepoliaTransactions(address) {
-            const apiKey = "5WJIRZI3DXRJR2RGWIQHWPQI4ZFYZQAWQF";  // Etherscan API key
+            const apiKey = "5WJIRZI3DXRJR2RGWIQHWPQI4ZFYZQAWQF";
             const url = `https://api-sepolia.etherscan.io/api?module=account&action=txlist&address=${address}&startblock=0&endblock=99999999&sort=desc&apikey=${apiKey}`;
 
             try {
                 const response = await fetch(url);
                 const data = await response.json();
-                
+
                 if (data.status === "1") {
                     return data.result;
                 } else {
@@ -124,9 +179,8 @@
         }
 
         async function displayTransactions() {
-            const address = "0x63F7a2606C8e9925046C1e5D37c978D0cd9D5266";  // Wallet address
+            const address = "0x63F7a2606C8e9925046C1e5D37c978D0cd9D5266";
             const transactions = await fetchSepoliaTransactions(address);
-
             const container = document.getElementById("transactionList");
             container.innerHTML = "";
 

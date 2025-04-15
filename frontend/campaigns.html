@@ -6,9 +6,9 @@
     <!-- Web3.js library -->
     <script src="https://cdn.jsdelivr.net/gh/ethereum/web3.js/dist/web3.min.js"></script>
     <!-- MetaMask Connection Script -->
-    <script type="module" src="./metamask.js"></script>
-    <script type="module">
-        import metaMaskConnector from './metamask.js';
+    <script src="./metamask.js"></script>
+  <script>
+        const metaMaskConnector = window.metaMaskConnector;
 
         const factoryAddress = "0xc587b076e7388b175622a8c41e5727e3882ea60f";
 
@@ -145,63 +145,128 @@
         window.redirectToFund = redirectToFund;
         window.onload = initCampaigns;
     </script>
+
     <style>
         body {
             background-color: #121212;
             color: #e0e0e0;
-            font-family: Arial, sans-serif;
+            font-family: 'Roboto', sans-serif;
             padding: 20px;
             margin: 0;
         }
 
         .header {
+            background: linear-gradient(45deg, #FF00FF, #00FFFF);
+            color: white;
+            padding: 40px;
             text-align: center;
-            margin-bottom: 20px;
-            color: #ffffff;
-            background-color: #1e88e5;
-            padding: 20px;
-            font-size: 24px;
-            border-radius: 8px;
+            margin: 0;
+            font-size: 32px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.8), 0 0 30px rgba(255, 255, 255, 0.8);
+            animation: glow 1.5s infinite alternate;
+        }
+
+        @keyframes glow {
+            0% {
+                text-shadow: 0 0 15px rgba(255, 255, 255, 0.8), 0 0 30px rgba(255, 255, 255, 0.8);
+            }
+            100% {
+                text-shadow: 0 0 25px rgba(255, 255, 255, 0.8), 0 0 45px rgba(255, 255, 255, 0.8);
+            }
         }
 
         .card {
-            background-color: #1f1f1f;
-            padding: 20px;
-            border-radius: 8px;
-            margin: 10px auto;
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
-            max-width: 600px;
-        }
-
-        .input-field, .fund-btn, select {
-            margin: 8px;
-            padding: 12px;
-            border-radius: 5px;
-            border: none;
-            background-color: #333;
+            background-color: #222222;
             color: #e0e0e0;
-            width: 90%;
-            font-size: 16px;
+            margin: 20px auto;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 6px 18px rgba(0, 255, 255, 0.5);
+            max-width: 600px;
+            text-align: center;
+            transition: all 0.4s ease;
         }
 
-        .fund-btn {
-            background-color: #007bff;
-            cursor: pointer;
-            transition: 0.3s;
+        .card:hover {
+            transform: scale(1.05) rotate(2deg);
+            box-shadow: 0 10px 30px rgba(0, 255, 255, 0.5);
         }
 
-        .fund-btn:hover {
-            background-color: #0056b3;
+        /* Funky Button with Neon Glowing Effect */
+        .link, .logout-btn, .donate-btn, .fund-btn, .premium-btn, .dashboard-btn {
+            display: inline-block;
+            background-color: #282828;
+            color: #00e676;
+            text-decoration: none;
+            padding: 15px 25px;
+            margin: 10px;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            text-transform: uppercase;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+        }
+
+        .link:hover, .logout-btn:hover, .donate-btn:hover, .fund-btn:hover, .premium-btn:hover, .dashboard-btn:hover {
+            background-color: #333;
+            color: #fff;
+            transform: translateY(-5px);
+            box-shadow: 0 0 25px rgba(255, 255, 255, 0.5);
+        }
+
+        .link:before, .logout-btn:before, .donate-btn:before, .fund-btn:before, .premium-btn:before, .dashboard-btn:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, #FF00FF, #00FFFF);
+            transform: scaleX(0);
+            transform-origin: top right;
+            transition: transform 0.5s ease;
+        }
+
+        .link:hover:before, .logout-btn:hover:before, .donate-btn:hover:before, .fund-btn:hover:before, .premium-btn:hover:before, .dashboard-btn:hover:before {
+            transform: scaleX(1);
+            transform-origin: top left;
+        }
+
+        .logout-btn {
+            background-color: #FF5733;
+            color: #fff;
+        }
+
+        .donate-btn {
+            background-color: #FFCC00;
+            color: white;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #1e1e1e;
+            color: #888;
+            font-size: 14px;
         }
 
         .campaign-item {
-            margin: 8px 0;
-            padding: 12px;
+            margin: 10px 0;
+            padding: 15px;
             background-color: #2c2c2c;
-            border-radius: 5px;
+            border-radius: 8px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+        }
+
+        .campaign-item span {
+            font-size: 16px;
         }
     </style>
 </head>
@@ -226,6 +291,8 @@
         <button class="fund-btn" onclick="searchCampaigns()">Search</button>
 
         <ul id="campaignList"></ul>
+        <!-- Back to Dashboard Button -->
+        <button class="dashboard-btn" onclick="window.location.href='dashboard.html'">Back to Dashboard</button>
     </div>
 </body>
 </html>
