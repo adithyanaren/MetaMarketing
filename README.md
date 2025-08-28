@@ -19,7 +19,7 @@ It enables users to create, view, and fund campaigns securely through **MetaMask
 ---
 <img width="940" height="368" alt="image" src="https://github.com/user-attachments/assets/4d94c06d-f8ad-4a14-b700-584b06be6835" />
 
-## 🛠 Tech Stack
+## Tech Stack
 
 * **Frontend**: HTML5, CSS3, JavaScript, Bootstrap
 * **Web3**: MetaMask, Ethereum (Testnet)
@@ -86,10 +86,10 @@ INFURA_API_KEY=your_infura_key
 node server.js
 ```
 
-Visit 👉 `http://localhost:5000`
+Visit  `http://localhost:5000`
 
 
-## 🤝 Contribution
+##  Contribution
 
 1. Fork the repo
 2. Create your feature branch (`git checkout -b feature-name`)
