@@ -4,6 +4,8 @@ MetaMarketing is a **Web3-based crowdfunding dApp** that connects campaign creat
 It enables users to create, view, and fund campaigns securely through **MetaMask** wallet integration, ensuring transparency and trust.
 
 ---
+<img width="940" height="368" alt="image" src="https://github.com/user-attachments/assets/0ea6e83f-8fec-4448-9a86-5d9eb7bb32f7" />
+<img width="453" height="364" alt="image" src="https://github.com/user-attachments/assets/db21693f-ce87-479e-81ea-24eb6ccba999" />
 
 ##  Features
 
